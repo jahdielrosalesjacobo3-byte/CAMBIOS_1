@@ -100,10 +100,10 @@ export default function HomeScreen({ navigation }: any) {
             {balance?.address.slice(0, 10)}...{balance?.address.slice(-8)}
           </Text>
           
-          {balance?.pendingTransactions.length > 0 && (
+          {balance?.pendingTransactions && balance.pendingTransactions.length > 0 && (
             <View style={styles.pendingContainer}>
               <Text style={styles.pendingText}>
-                {balance.pendingTransactions.length} transacción(es) pendiente(s)
+                {balance?.pendingTransactions?.length} transacción(es) pendiente(s)
               </Text>
             </View>
           )}

@@ -20,7 +20,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
@@ -29,15 +28,43 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Inicio',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="wallet"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Cartera',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="creditcard" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="credit"
+        options={{
+          title: 'Crédito',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="banknote" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="swap"
+        options={{
+          title: 'Swap',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="arrow.left.arrow.right" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="trading"
+        options={{
+          title: 'Trading',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.line.uptrend.xyaxis" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chinampa"
+        options={{
+          title: 'Chinampa',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="leaf" color={color} />,
         }}
       />
     </Tabs>
