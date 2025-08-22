@@ -1,11 +1,11 @@
 import { VerifiableCredential, VCRequest } from '../../types/did';
-import { KeyManagementService } from '../security/key-management';
+import { PrivadoIDService } from './privado-id-service';
 
 export class VCService {
-  private keyManagement: KeyManagementService;
+  private privadoIDService: PrivadoIDService;
   
   constructor() {
-    this.keyManagement = new KeyManagementService();
+    this.privadoIDService = new PrivadoIDService();
   }
   
   // Emitir credencial verificable
@@ -72,24 +72,7 @@ export class VCService {
   // Generar prueba de conocimiento cero
   async generateZeroKnowledgeProof(vc: VerifiableCredential, attributes: string[]): Promise<string> {
     try {
-      // Simular generación de prueba ZK-SNARK
-      const proofData = {
-        credentialId: vc.id,
-        revealedAttributes: attributes,
-        timestamp: Date.now(),
-        nonce: Math.random().toString(36)
-      };
-      
-      // Simular firma de la prueba
-      const proofSignature = await this.keyManagement.signData(
-        JSON.stringify(proofData),
-        'mock-private-key'
-      );
-      
-      return btoa(JSON.stringify({
-        proof: proofData,
-        signature: proofSignature
-      }));
+      return await this.privadoIDService.generateZeroKnowledgeProof(vc, attributes);
     } catch (error) {
       console.error('Error generating ZK proof:', error);
       throw new Error('Failed to generate zero-knowledge proof');
@@ -116,10 +99,7 @@ export class VCService {
         created: new Date().toISOString(),
         verificationMethod: `${request.issuerDID}#keys-1`,
         proofPurpose: 'assertionMethod',
-        proofValue: await this.keyManagement.signData(
-          JSON.stringify(request),
-          'mock-private-key'
-        )
+        proofValue: `0x${Math.random().toString(16).substring(2, 130)}`
       };
       
       return proofData;

@@ -1,41 +1,32 @@
-import { DIDDocument, DIDRegistration, KeyPair } from '../../types/did';
-import { KeyManagementService } from '../security/key-management';
+import { DIDDocument, DIDRegistration } from '../../types/did';
+import { PrivadoIDService, PrivadoIdentity } from './privado-id-service';
 
 export class DIDService {
-  private keyManagement: KeyManagementService;
+  private privadoIDService: PrivadoIDService;
   
   constructor() {
-    this.keyManagement = new KeyManagementService();
+    this.privadoIDService = new PrivadoIDService();
   }
   
-  // Generar DID único
+  // Generar DID único usando Privado ID
   async generateDID(): Promise<DIDRegistration> {
     try {
-      // 1. Generar par de claves criptográficas
-      const keyPair = await this.keyManagement.generateKeyPair();
+      // 1. Crear identidad con Privado ID
+      const identity = await this.privadoIDService.createIdentity();
       
-      // 2. Crear DID URI (did:wallof:user:unique-id)
-      const did = `did:wallof:user:${this.generateUniqueId()}`;
+      // 2. Crear DID Document
+      const didDocument = this.createDIDDocument(identity.did, identity.publicKey);
       
-      // 3. Crear DID Document
-      const didDocument = this.createDIDDocument(did, keyPair.publicKey);
-      
-      // 4. Simular registro en blockchain (Monad)
+      // 3. Simular registro en blockchain
       const tx = await this.registerOnBlockchain(didDocument);
       
-      // 5. Encriptar clave privada (usando contraseña temporal)
-      const encryptedPrivateKey = await this.keyManagement.encryptPrivateKey(
-        keyPair.privateKey, 
-        'temp-password-123'
-      );
-      
-      // 6. Generar clave de recuperación
-      const recoveryKey = await this.keyManagement.generateRecoveryKey();
+      // 4. Generar clave de recuperación
+      const recoveryKey = this.generateRecoveryKey();
       
       return {
-        did,
+        did: identity.did,
         didDocument,
-        privateKey: encryptedPrivateKey,
+        privateKey: identity.privateKey,
         recoveryKey,
         timestamp: Date.now(),
         blockchainTx: tx.hash
@@ -80,11 +71,10 @@ export class DIDService {
     };
   }
   
-  // Generar ID único
-  private generateUniqueId(): string {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2);
-    return `${timestamp}${random}`.substring(0, 16);
+  // Generar clave de recuperación
+  private generateRecoveryKey(): string {
+    const recoveryKey = Math.random().toString(36).substring(2, 34);
+    return recoveryKey;
   }
   
   // Simular registro en blockchain
@@ -162,62 +152,45 @@ export class DIDService {
   // Recuperar DID
   async recoverDID(recoveryKey: string): Promise<DIDRegistration | null> {
     try {
-      // 1. Verificar clave de recuperación
-      const isValid = await this.keyManagement.verifyRecoveryKey(recoveryKey, recoveryKey);
+      // Simular recuperación desde almacenamiento
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      if (!isValid) {
-        throw new Error('Invalid recovery key');
-      }
-      
-      // 2. Recuperar DID desde almacenamiento seguro (simulado)
-      return this.retrieveFromSecureStorage(recoveryKey);
+      // Por ahora, retornamos null (no hay datos almacenados)
+      return null;
     } catch (error) {
       console.error('Error recovering DID:', error);
       return null;
     }
   }
   
-  // Recuperar desde almacenamiento seguro (simulado)
-  private async retrieveFromSecureStorage(recoveryKey: string): Promise<DIDRegistration | null> {
-    // Simular recuperación desde almacenamiento
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Por ahora, retornamos null (no hay datos almacenados)
-    return null;
+  // Emitir credencial verificable usando Privado ID
+  async issueCredential(
+    issuerDID: string,
+    subjectDID: string,
+    credentialType: string,
+    data: any
+  ) {
+    return await this.privadoIDService.issueCredential(
+      issuerDID,
+      subjectDID,
+      credentialType,
+      data
+    );
   }
   
-  // Firmar datos con DID
-  async signWithDID(data: string, privateKey: string, password: string): Promise<string> {
-    try {
-      // 1. Desencriptar clave privada
-      const decryptedPrivateKey = await this.keyManagement.decryptPrivateKey(privateKey, password);
-      
-      // 2. Firmar datos
-      return await this.keyManagement.signData(data, decryptedPrivateKey);
-    } catch (error) {
-      console.error('Error signing with DID:', error);
-      throw new Error('Failed to sign with DID');
-    }
+  // Verificar credencial usando Privado ID
+  async verifyCredential(credential: any): Promise<boolean> {
+    return await this.privadoIDService.verifyCredential(credential);
   }
   
-  // Verificar firma con DID
-  async verifyWithDID(data: string, signature: string, did: string): Promise<boolean> {
-    try {
-      // 1. Resolver DID para obtener clave pública
-      const didDocument = await this.resolveDID(did);
-      
-      if (!didDocument || !didDocument.verificationMethod[0]) {
-        return false;
-      }
-      
-      // 2. Extraer clave pública
-      const publicKey = didDocument.verificationMethod[0].publicKeyJwk;
-      
-      // 3. Verificar firma
-      return await this.keyManagement.verifySignature(data, signature, JSON.stringify(publicKey));
-    } catch (error) {
-      console.error('Error verifying with DID:', error);
-      return false;
-    }
+  // Generar prueba de conocimiento cero usando Privado ID
+  async generateZeroKnowledgeProof(
+    credential: any,
+    attributes: string[]
+  ): Promise<string> {
+    return await this.privadoIDService.generateZeroKnowledgeProof(
+      credential,
+      attributes
+    );
   }
 } 

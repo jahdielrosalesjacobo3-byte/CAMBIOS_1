@@ -1,20 +1,13 @@
 import { KeyPair } from '../../types/did';
+import 'react-native-get-random-values';
 
 export class KeyManagementService {
-  // Generar par de claves ECDSA
+  // Generar par de claves ECDSA (simulado para desarrollo)
   async generateKeyPair(): Promise<KeyPair> {
     try {
-      const keyPair = await crypto.subtle.generateKey(
-        {
-          name: 'ECDSA',
-          namedCurve: 'P-256'
-        },
-        true,
-        ['sign', 'verify']
-      );
-      
-      const publicKey = await this.exportPublicKey(keyPair.publicKey);
-      const privateKey = await this.exportPrivateKey(keyPair.privateKey);
+      // Simulación para desarrollo - en producción usar crypto.subtle
+      const publicKey = btoa(Math.random().toString(36) + Date.now().toString(36));
+      const privateKey = btoa(Math.random().toString(36) + Date.now().toString(36));
       
       return {
         publicKey,
